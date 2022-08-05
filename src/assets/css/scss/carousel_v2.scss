@@ -1,0 +1,58 @@
+.sliderContainer {
+    position: relative;
+    background: #eee;
+  }
+  
+  .slide {
+    display: none;
+    padding: 30px;
+    text-align: center;
+  }
+  
+  .prev,
+  .next {
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    width: auto;
+    margin-top: -30px;
+    padding: 16px;
+    color: #444;
+    font-weight: bold;
+    font-size: 20px;
+    border-radius: 0 3px 3px 0;
+    user-select: none;
+  }
+  
+  .next {
+    position: absolute;
+    right: 0;
+    border-radius: 3px 0 0 3px;
+  }
+  
+  .prev:hover,
+  .next:hover {
+    color: blue;
+  }
+  
+  .dotContainer {
+    margin-bottom: 30px;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .dot {
+    cursor: pointer;
+    height: 15px;
+    width: 15px;
+    margin: 0 20px;
+    background-color: #444;
+    border-radius: 50%;
+    display: inline-block;
+    transition: background-color 0.6s ease;
+  }
+  
+  .activeDot,
+  .dot:hover {
+    background-color: red;
+  }
