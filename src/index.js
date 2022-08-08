@@ -12,8 +12,12 @@ import {Carousel} from './assets/js/carrousel_v2.js'
     console.log('This site is loaded');
 
     let primerSlider = new Carousel (1, ".primerInstancia", false);
+    let segundoSlider = new Carousel (1, ".segundaInstancia", true);
+    let tercerSlider = new Carousel (1, ".tercerInstancia", false);
     
     primerSlider.setupSlides()
+    segundoSlider.setupSlides()
+    tercerSlider.setupSlides()
 
   } else {
     //reload
