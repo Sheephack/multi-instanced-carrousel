@@ -10,6 +10,11 @@
 
 ### Version log:
 
+- Tercer Version:
+    - Se hacen multiples iteraciones con diferentes metodos de utilizacion para el carrusel, en busqueda del optimo a utilizar, teniendo en cuenta el TODO de la version anterior.
+    - Se optimiza el codigo y se utilizan matchMedia para el llamado de los breakpoints.
+    - El Carrusel es, en primer instancia, funcional en este estado, necesitando varios ajustes con las variaciones de opciones establecidas a fin de ser totalmente estable y libre de bugs.
+    - Los dots son funcionales aun en vista multiple, mostrando los items seleccionados en multiplicacion. (TODO: Ajustes en otros breakpoints, solo visible en tablet)
 - Segunda version: 
     - Se cambia la funcionalidad y construccion del carrusel a forma automatica. Los dots y flechas ya no estan hardcodeados si no que se construyen en funcion de las opciones y de cantidad de items presentes en el carrusel.
     - Se agrega logica de flechas. Las mismas ahora son opcionales.

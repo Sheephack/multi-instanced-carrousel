@@ -11,425 +11,255 @@
             <li class="item-slider">
 */
 
-let contenedorExterno, contenedorProductos, productos, viewportWidth, containerHeight, containerWidth, layout;
-let isResizing=false,
-    bulletsActive = false,
-    navActive = true,
-    autoHeight = true,
-    autoWidth = false,
-    autoSlide = false,
-    timeoutSlide = 5000;
-let breakpoints = {
-    base: {
-        minWidth: 0,
-        items: 1,
-        active: true
-    },
-    medium: {
-        minWidth: 760,
-        items: 2,
-        active: true
-    },
-    large: {
-        minWidth: 992,
-        items: 3,
-        active: true
-    },
-    xlarge: {
-        minWidth: 1200,
-        items: 3,
-        active: true
+
+
+
+
+export class CarouselV3{
+    constructor(externalContainer, autoHeight, autoWidth, dots, arrows, resizing){
+        this.externalContainer = document.querySelector(externalContainer + '.productos_wrapper');
+        this.productContainer = this.externalContainer.querySelector('.productos')
+        this.productos = this.productContainer.querySelectorAll('.item-slider');
+        this.viewportWidth = window.innerWidth;
+        this.autoHeight = autoHeight;
+        this.autoHeight = autoWidth;
+        this.containerHeight;
+        this.containerWidth;
+
+        //options
+        this.bulletsActive = dots;
+        this.navActive = arrows;
+        this.isResizing = resizing;
     }
-}
-
-
-export default function carousel(wrapper, options=null) {
+    setWindowResizeEvent(){
+        //acomodo el evento para detectar resize y que se vuelva a construir el carousel
+        window.addEventListener('resize', event => {
+            //este se hace para que no se haga resize en cada pixel, sino que espera 1000 antes de hacerlo
+            if(this.isResizing) {
+                return;
+            } else {
+                this.isResizing=true;
+                setTimeout(()=>{
+                    //chequea si se destruye o no porque si no cambia el layout no vale la pena
+                    let newLayout = this.setLayout(window.innerWidth)
     
-    contenedorExterno = wrapper.querySelector('.productos_wrapper');
-    contenedorProductos = wrapper.querySelector('.productos');
+                    //si setLayout devuelve false, es necesario la destruccion porque no hay carousel en este nuevo layout y no se activa mas
+                    if ( !newLayout ) {
+                        console.log('esta desactivo')
+                        this.destroyCarousel();
+                    } else if ( newLayout != layout ) {
+                        //si newLayout no es igual a llayout hay que destruirlo y volverlo a armar porque cambia layout
+                        this.isResizing=false;
+                        this.destroyCarousel();
+                        setTimeout(()=>{
+                            this.startCarousel();
+                        },500);
+                    } 
     
-    if (contenedorProductos) {
-        productos = contenedorProductos.querySelectorAll('.item-slider');
-    } else {
-        console.error('no hay contenedor de productos');
-        return;
+                    this.isResizing=false;
+                    
+                },1000)
+            }
+        });
     }
 
-    if (productos.length < 1) {
-        console.error('no hay productos');
-        return;
-    }
-
-    //valido las opciones
-    if (options!=null && options.breakpoints) {
-        breakpoints = options.breakpoints;
-    }
-
-    if (options!=null && options.bullets) {
-        bulletsActive = options.bullets;
-    }
-
-    if (options!=null && options.navigation) {
-        navActive = options.navigation;
-    }
-    if (options!=null && options.autoSlide) {
-        autoSlide = options.autoSlide
-    }
-    if (options!=null && options.timeoutSlide) {
-        timeoutSlide = options.timeoutSlide
-    }
-
-    if (options!=null && options.autoHeight) {
-        autoHeight = options.autoHeight;
-    }
-
-    if (options!=null && options.autoWidth) {
-        autoWidth = options.autoWidth;
-    }
+    startCarousel(){
+        this.setWindowResizeEvent();
+        console.log('carousel started');
+        
     
-    setWindowResizeEvent();
-    
-    //inicia el carousel
-    setTimeout(()=>{
-        startCarousel();
-    },1000);
-
-}
-
-//destruye carousel, elementos y eventos
-const destroyCarousel = () => {
-    console.log('carousel ended')
-    
-    if (navActive) {
-        //destruye navs
-        let elemento = contenedorExterno.querySelector('.nav-wrapper');
-        if (elemento) {
-            let padre = elemento.parentNode;
-		    padre.removeChild(elemento);
+        //setea layout: base/medium/large/xl y sabe cuantos debe mostrar y si debe mostrarlo o detenerlo en este viewport
+        let layout = this.setLayout(this.viewportWidth);
+        if ( !layout ) {
+            console.log('carousel detenido en este viewport: ', this.viewportWidth)
+            return;
         }
-    }
-
-    if (bulletsActive) {
-        //destruye bullets
-        let elemento = contenedorExterno.querySelector('.bullets-wrapper');
-        if (elemento) {
-            let padre = elemento.parentNode;
-		    padre.removeChild(elemento);
-        }        
-    }
-
-    //quita clases agregadas para restaurar el diseño original
-    //setea productos. activa el primero y prepara las clases para el layout a mostrar
-    contenedorExterno.classList.remove('carousel-on');
-    contenedorProductos.classList.remove('productos-on');
-    if ( autoHeight ) {
-        contenedorProductos.style.height = 'auto';
-    }
-
-    if ( autoWidth ) {
-        contenedorProductos.style.width = 'auto';
-    }
     
-    for (let p = 0; p < productos.length; p++) {
-        const producto = productos[p];
-        producto.classList.remove('item-on');
-        producto.classList.remove('item-on-'+layout);
-        producto.classList.remove('active-1');
-        producto.classList.remove('active');
-        producto.classList.remove('active1');
-        producto.classList.remove('active2');
-        producto.classList.remove('active3');
-        producto.classList.remove('active4');
-        producto.classList.remove('active-out-right');
-    }
-}
-
-//inicia el carousel de acuerdo a layout
-const startCarousel = () => {
-    console.log('carousel started');
-
-    //setea ancho de viewport
-    viewportWidth = window.innerWidth;
-
-    //setea layout: base/medium/large/xl y sabe cuantos debe mostrar y si debe mostrarlo o detenerlo en este viewport
-    layout = setLayout(viewportWidth);
-    if ( !layout ) {
-        console.log('carousel detenido en este viewport: ', viewportWidth)
-        return;
-    }
-
-    //chequea si vale la pena el carousel de acuerdo al layout y cantidad de items
-    if (layout >= productos.length) {
-
-        console.log('no hay suficientes productos para un carousel')
-        return;
-    }
-
-    //setea el alto y ancho del ul de productos para soportar absolute
-    if ( autoHeight ) {
-        containerHeight = getHeightDefault();
-    }
+        //chequea si vale la pena el carousel de acuerdo al layout y cantidad de items
+        if (layout >= this.productos.length) {
     
-    if ( autoWidth ) {
-        containerWidth = getWidthDefault( layout );
-    }
-
-    //arma bullets
-    if (bulletsActive) {
-        createBullets();
-        contenedorExterno.append()
-    }
-
-    //arma navs
-    if (navActive) {
-        createNavigation();
-    }
-
-    //setea productos. activa el primero y prepara las clases para el layout a mostrar
-    prepareProductsToSlide();
-
-    isNavigationsBtnsInView(0);
+            console.log('no hay suficientes productos para un carousel')
+            return;
+        }
     
-}
-
-
-
-//devuelve layout: base/medium/large/xl y sabe cuantos debe mostrar
-const setLayout = (w) => {
-    let items = 1;
-    let active = true;
-
-    switch (true) {
-        case w > breakpoints.xlarge.minWidth:
-            items = breakpoints.xlarge.items;
-            active = breakpoints.xlarge.active;
-        break;
+        //setea el alto y ancho del ul de productos para soportar absolute
+        if ( this.autoHeight ) {
+            this.containerHeight = this.getHeightDefault();
+        }
+        
+        if ( this.autoWidth ) {
+            this.containerWidth = this.getWidthDefault( layout );
+        }
     
-        case w > breakpoints.large.minWidth:
-            items = breakpoints.large.items;
-            active = breakpoints.large.active;
-        break;
-
-        case w > breakpoints.medium.minWidth:
-            items = breakpoints.medium.items;
-            active = breakpoints.medium.active;
-        break;
-        default:
-            items = breakpoints.base.items;
-            active = breakpoints.base.active;
-        break;
-    }
-
-    if ( active ) {
-        return items;
-    } else {
-        return false;
-    }
+        //arma bullets
+        if (this.bulletsActive) {
+            this.createBullets();
+            this.externalContainer.append()
+        }
     
-}
-
-//busca altura adecuada de acuerdo al producto más alto
-const getHeightDefault = () => {
-    let h = 0;
-    for (let i = 0; i < productos.length; i++) {
-        let prH = productos[i].getBoundingClientRect().height
-        if ( prH > h ) {
-            h = prH;
+        //arma navs
+        if (this.navActive) {
+            this.createNavigation();
+        }
+    
+        //setea productos. activa el primero y prepara las clases para el layout a mostrar
+        this.prepareProductsToSlide(layout);
+    
+        this.isNavigationsBtnsInView(0, layout);
+        
+    }
+    //devuelve layout: base/medium/large/xl y sabe cuantos debe mostrar
+    setLayout(w){
+        let breakpoints = {
+            base: {
+                minWidth: 0,
+                items: 1,
+                active: true
+            },
+            medium: {
+                minWidth: 760,
+                items: 2,
+                active: true
+            },
+            large: {
+                minWidth: 992,
+                items: 3,
+                active: true
+            },
+            xlarge: {
+                minWidth: 1200,
+                items: 3,
+                active: true
+            }
+        }
+        let items = 1;
+        let active = true;
+    
+        switch (true) {
+            case w > breakpoints.xlarge.minWidth:
+                items = breakpoints.xlarge.items;
+                active = breakpoints.xlarge.active;
+            break;
+        
+            case w > breakpoints.large.minWidth:
+                items = breakpoints.large.items;
+                active = breakpoints.large.active;
+            break;
+    
+            case w > breakpoints.medium.minWidth:
+                items = breakpoints.medium.items;
+                active = breakpoints.medium.active;
+            break;
+            default:
+                items = breakpoints.base.items;
+                active = breakpoints.base.active;
+            break;
+        }
+    
+        if ( active ) {
+            return items;
+        } else {
+            return false;
         }
         
     }
-    return h;
-}
-
-//busca el ancho considerando el layout
-const getWidthDefault = (layout) => {
+    //busca altura adecuada de acuerdo al producto más alto
+    getHeightDefault(){
+        let h = 0;
+        for (let i = 0; i < this.productos.length; i++) {
+            let prH = this.productos[i].getBoundingClientRect().height
+            if ( prH > h ) {
+                h = prH;
+            }
+        }
+        return h;
+    }
+    //busca el ancho considerando el layout
+    getWidthDefault(layout){
     let wid = 286;
-    for (let i = 0; i < productos.length; i++) {
+    for (let i = 0; i < this.productos.length; i++) {
         let prW = productos[i].getBoundingClientRect().width
         if ( prW > wid ) {
             wid = prW;
         }
-        
     }
     return wid * layout;
     
-}
-
-//funcion que maneja la lógica del resize
-const setWindowResizeEvent = () => {
-    //acomodo el evento para detectar resize y que se vuelva a construir el carousel
-    window.addEventListener('resize', event => {
-        //este se hace para que no se haga resize en cada pixel, sino que espera 1000 antes de hacerlo
-        if(isResizing) {
-            return;
-        } else {
-            isResizing=true;
-            setTimeout(()=>{
-                //chequea si se destruye o no porque si no cambia el layout no vale la pena
-                let newLayout = setLayout(window.innerWidth)
-
-                //si setLayout devuelve false, es necesario la destruccion porque no hay carousel en este nuevo layout y no se activa mas
-                if ( !newLayout ) {
-                    console.log('esta desactivo')
-                    destroyCarousel();
-                } else if ( newLayout != layout ) {
-                    //si newLayout no es igual a llayout hay que destruirlo y volverlo a armar porque cambia layout
-                    isResizing=false;
-                    destroyCarousel();
-                    setTimeout(()=>{
-                        startCarousel();
-                    },500);
-                } 
-
-                isResizing=false;
-                
-            },1000)
-        }
-    });
-}
-
-//crear bullets
-const createBullets = () => {
+    }
+    //crear bullets
+    createBullets(){
     let ul = document.createElement('ul');
-        ul.classList.add('bullets-wrapper');
-
-    
-
-    for (let index = 0; index < productos.length; index++) {
+    ul.classList.add('bullets-wrapper');
+    for (let index = 0; index < this.productos.length; index++) {
         let li = document.createElement('li');
         if (index == 0) {
             li.classList.add('active');
         }
         ul.append(li);
     }
-
-    contenedorExterno.append(ul);
-}
-
-//crear navs
-const createNavigation = () => {
-    let div = document.createElement('div');
-        div.classList.add('nav-wrapper');
-
-    //botones:
-    let btnL = document.createElement('button');
-        btnL.classList.add('nav-left');
-        btnL.setAttribute('data-direction', 'left');
-    div.append(btnL);
-
-    let btnR = document.createElement('button');
-        btnR.classList.add('nav-right');
-        btnR.setAttribute('data-direction', 'right');
-    div.append(btnR);
-
-    contenedorExterno.append(div);
-
-    //crea events para botones
-
-    btnL.addEventListener('click', clickNavigation);
-
-    btnR.addEventListener('click', clickNavigation);
-}
-
-//prepara los productos agregando clases y estilos a los contenedores
-const prepareProductsToSlide = () => {
-    contenedorExterno.classList.add('carousel-on');
-    contenedorProductos.classList.add('productos-on');
-
-    if ( autoHeight ) {
-        contenedorProductos.style.height = containerHeight + 'px';
+    this.externalContainer.append(ul);
     }
-
-    if ( autoWidth ) {
-        contenedorProductos.style.width = containerWidth + 'px';
-    }
-    
-    for (let p = 0; p < productos.length; p++) {
-        const producto = productos[p];
-        producto.classList.add('item-on');
-        producto.classList.add('item-on-'+layout)
-        producto.setAttribute('data-index', p);
-
-        switch (p) {
-            case 0:
-                producto.classList.add('active');
-            break;
-            case 1:
-                if (layout && layout > 1) {
-                    producto.classList.add('active1');
-                } else {
-                    producto.classList.add('active-out-right');
-                }
-            break;
-            case 2:
-                if (layout && layout > 2) {
-                    producto.classList.add('active2');
-                } else {
-                    producto.classList.add('active-out-right');
-                }
-            break;
-            case 3:
-                if (layout && layout > 3) {
-                    producto.classList.add('active3');
-                } else {
-                    producto.classList.add('active-out-right');
-                }
-            break;
-            case 4:
-                if (layout && layout > 4) {
-                    producto.classList.add('active4');
-                } else {
-                    producto.classList.add('active-out-right');
-                }
-            break;
+    moveOne(direction){
+        console.log(0)
+        //detectar que numero está activo
+        let layout = this.setLayout(this.viewportWidth);
+        let active = parseInt(this.getActive());
+        
+        //sumar o restar al active
+        if (direction == 'right' && (active + layout) < this.productos.length) {
+            active++;
+            this.moveTo(active, layout);
+        } else if (direction == 'left' && active != 0){
+            active--;
+            this.moveTo(active, layout);
         }
-
+        this.isNavigationsBtnsInView(active);
     }
-}
-
-//click en botones de navegacion
-const clickNavigation = event => {
-    const direction = event.target.getAttribute('data-direction');
-    
-    //se puede mover hacia ahí?
-    if ( event.target.getAttribute('data-hidden') != true ) {
-        //entonces mueva:
-        moveOne(direction);    
+    //click en botones de navegacion
+    clickNavigation(event){
+        let direction = event.target.getAttribute('data-direction');
+        
+        //se puede mover hacia ahí?
+        if (event.target.getAttribute('data-hidden') != true ){
+            //entonces mueva:
+            this.moveOne(direction);    
+        }
     }
+    createNavigation(){
+        let div = document.createElement('div');
+            div.classList.add('nav-wrapper');
     
-
-}
-
-const moveOne = (direction) => {
-    console.log(0)
-    //detectar que numero está activo
-    let active = parseInt(getActive());
+        //botones:
+        let btnL = document.createElement('button');
+            btnL.classList.add('nav-left');
+            btnL.setAttribute('data-direction', 'left');
+        div.append(btnL);
     
-    //sumar o restar al active
-    if (direction == 'right' && (active + layout) < productos.length) {
-        active++;
-        moveTo(active);
-    } else if (direction == 'left' && active != 0){
-        active--;
-        moveTo(active);
+        let btnR = document.createElement('button');
+            btnR.classList.add('nav-right');
+            btnR.setAttribute('data-direction', 'right');
+        div.append(btnR);
+    
+        this.externalContainer.append(div);
+    
+        //crea events para botones
+    
+        btnL.addEventListener('click', this.clickNavigation.bind(this));
+    
+        btnR.addEventListener('click', this.clickNavigation.bind(this));
     }
-
-    isNavigationsBtnsInView(active);
-}
-
-//funcion que encuentra activa
-const getActive = () => {
-    let productActive = contenedorProductos.querySelector('.item-on.active');
-    let index = productActive.getAttribute('data-index');
-    return index;
-}
-
-//se mueve a este index: 0, 1, 2
-const moveTo = index => {
+    //funcion que encuentra activa
+    getActive(){
+        let productActive = this.productContainer.querySelector('.item-on.active');
+        let index = productActive.getAttribute('data-index');
+        return index;  
+    }
+    //se mueve a este index: 0, 1, 2
+    moveTo(index, layout){
 
     //recorrer productos
-    for (let p = 0; p < productos.length; p++) {
-        const producto = productos[p];
+    for (let p = 0; p < this.productos.length; p++) {
+        const producto = this.productos[p];
         producto.classList.remove('active-1');
         producto.classList.remove('active');
         producto.classList.remove('active1');
@@ -440,49 +270,101 @@ const moveTo = index => {
     }
     
     //definimos active
-    if ( productos[index-1] ) {
-        productos[index-1].classList.add('active-1');
+    if ( this.productos[index-1] ) {
+        this.productos[index-1].classList.add('active-1');
     }
-    if ( productos[index] ) {
-        productos[index].classList.add('active');
+    if ( this.productos[index] ) {
+        this.productos[index].classList.add('active');
     }
-    if ( productos[index+1] ) {
+    if ( this.productos[index+1] ) {
         //debugger;
         if (layout > 1 ) {
-            productos[index+1].classList.add('active1');
+            this.productos[index+1].classList.add('active1');
         } else {
-            productos[index+1].classList.add('active-out-right');
+            this.productos[index+1].classList.add('active-out-right');
         }
     } 
-    if ( productos[index+2] ) {
+    if ( this.productos[index+2] ) {
         //debugger;
         if (layout > 2 ) {
-            productos[index+2].classList.add('active2');
+            this.productos[index+2].classList.add('active2');
         } else {
-            productos[index+2].classList.add('active-out-right');
+            this.productos[index+2].classList.add('active-out-right');
         }
     } 
-    if ( productos[index+3] ) {  
+    if ( this.productos[index+3] ) {  
         //debugger;
         if (layout > 3 ) {
-            productos[index+3].classList.add('active3');
+            this.productos[index+3].classList.add('active3');
         } else {
-            productos[index+3].classList.add('active-out-right');
+            this.productos[index+3].classList.add('active-out-right');
         }
     } 
-    if ( productos[index+4] ) {  
+    if ( this.productos[index+4] ) {  
         //debugger;
         if (layout > 4 ) {
-            productos[index+4].classList.add('active4');
-        } else {
-            productos[index+4].classList.add('active-out-right');
+            this.productos[index+4].classList.add('active4');
+            } else {
+            this.productos[index+4].classList.add('active-out-right');
+            }
+        } 
+    }
+    prepareProductsToSlide(layout){
+        this.externalContainer.classList.add('carousel-on');
+        this.productContainer.classList.add('productos-on');
+    
+        if ( this.autoHeight ) {
+            this.productContainer.style.height = this.containerHeight + 'px';
         }
-    } 
-}
-
-
-//chequea si es correcto mostrar los buttons right y left y los oculta o los muestra
-const isNavigationsBtnsInView = active => {
+    
+        if ( this.autoWidth ) {
+            this.productContainer.style.width = this.containerWidth + 'px';
+        }
+        
+        for (let p = 0; p < this.productos.length; p++) {
+            const producto = this.productos[p];
+            producto.classList.add('item-on');
+            producto.classList.add('item-on-'+layout)
+            producto.setAttribute('data-index', p);
+    
+            switch (p) {
+                case 0:
+                    producto.classList.add('active');
+                break;
+                case 1:
+                    if (layout && layout > 1) {
+                        producto.classList.add('active1');
+                    } else {
+                        producto.classList.add('active-out-right');
+                    }
+                break;
+                case 2:
+                    if (layout && layout > 2) {
+                        producto.classList.add('active2');
+                    } else {
+                        producto.classList.add('active-out-right');
+                    }
+                break;
+                case 3:
+                    if (layout && layout > 3) {
+                        producto.classList.add('active3');
+                    } else {
+                        producto.classList.add('active-out-right');
+                    }
+                break;
+                case 4:
+                    if (layout && layout > 4) {
+                        producto.classList.add('active4');
+                    } else {
+                        producto.classList.add('active-out-right');
+                    }
+                break;
+            }
+    
+        }
+    }
+    //chequea si es correcto mostrar los buttons right y left y los oculta o los muestra
+    isNavigationsBtnsInView(active, layout){
     let btns = document.querySelectorAll('.nav-wrapper button');
 
     if (active != 0){
@@ -498,7 +380,7 @@ const isNavigationsBtnsInView = active => {
     }
 
     if (layout != false ) {
-        if (active+layout == productos.length) {
+        if (active+layout == this.productos.length) {
             //oculta right
             btns[1].style.opacity = 0;
             btns[1].style.pointerEvents = 'none';
@@ -510,4 +392,76 @@ const isNavigationsBtnsInView = active => {
             btns[1].removeAttribute('data-hidden');
         }
     }
+    }
+    //destruye carousel, elementos y eventos
+    destroyCarousel = () => {
+    console.log('carousel ended')
+    
+    if (this.navActive) {
+        //destruye navs
+        let elemento = this.externalContainer.querySelector('.nav-wrapper');
+        if (elemento) {
+            let padre = elemento.parentNode;
+		    padre.removeChild(elemento);
+        }
+    }
+
+    if (this.bulletsActive) {
+        //destruye bullets
+        let elemento = this.externalContainer.querySelector('.bullets-wrapper');
+        if (elemento) {
+            let padre = elemento.parentNode;
+		    padre.removeChild(elemento);
+        }        
+    }
+
+    //quita clases agregadas para restaurar el diseño original
+    //setea productos. activa el primero y prepara las clases para el layout a mostrar
+    this.externalContainer.classList.remove('carousel-on');
+    this.productContainer.classList.remove('productos-on');
+    if ( this.autoHeight ) {
+        this.productContainer.style.height = 'auto';
+    }
+
+    if ( this.autoWidth ) {
+        this.productContainer.style.width = 'auto';
+    }
+    
+    for (let p = 0; p < this.productos.length; p++) {
+        const producto = this.productos[p];
+        producto.classList.remove('item-on');
+        producto.classList.remove('item-on-'+layout);
+        producto.classList.remove('active-1');
+        producto.classList.remove('active');
+        producto.classList.remove('active1');
+        producto.classList.remove('active2');
+        producto.classList.remove('active3');
+        producto.classList.remove('active4');
+        producto.classList.remove('active-out-right');
+    }
+    }
 }
+
+
+
+
+//funcion que maneja la lógica del resize
+
+
+
+
+//crear navs
+
+
+//prepara los productos agregando clases y estilos a los contenedores
+
+
+
+
+
+
+
+
+
+
+

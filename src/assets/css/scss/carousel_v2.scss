@@ -1,12 +1,16 @@
 .sliderContainer {
     position: relative;
     background: #eee;
+    display: flex;
+    justify-content: space-evenly;
   }
   
   .slide {
     display: none;
     padding: 30px;
     text-align: center;
+    background-color: #444;
+    color: #eee;
   }
   
   .prev,
@@ -27,6 +31,10 @@
   .next {
     position: absolute;
     right: 0;
+  }
+  .prev {
+    position: absolute;
+    left: 0;
   }
   
   .prev:hover,
