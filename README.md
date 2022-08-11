@@ -10,6 +10,9 @@
 
 ### Version log:
 
+- Cuarta version:
+    - Es operativo totalmente el cambio de breakpoints tanto en los slides como en los dots.
+    - TODO: Ajuste de desplazamiento en cada breakpoint, y personalizacion de los mismos.
 - Tercer Version:
     - Se hacen multiples iteraciones con diferentes metodos de utilizacion para el carrusel, en busqueda del optimo a utilizar, teniendo en cuenta el TODO de la version anterior.
     - Se optimiza el codigo y se utilizan matchMedia para el llamado de los breakpoints.

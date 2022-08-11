@@ -12,10 +12,10 @@ import {CarouselV3} from './assets/js/carousel.js'
     //do
     console.log('This site is loaded');
 
-    let primerSlider = new Carousel (1, ".primerInstancia", false, 0, true, true, true, true);
-    let segundoSlider = new Carousel (1, ".segundaInstancia", true, 5000, false, false, true, false);
-    let tercerSlider = new Carousel (1, ".tercerInstancia", false, 0, true, true, true, false);
-    let cuartoSlider = new Carousel (1, ".cuartaInstancia", false, 0, true, true, true, false);
+    let primerSlider = new Carousel (1, ".primerInstancia", 0, true, true, true);
+    let segundoSlider = new Carousel (1, ".segundaInstancia", 5000, false, false, false);
+    let tercerSlider = new Carousel (1, ".tercerInstancia", 0, true, true, false);
+    let cuartoSlider = new Carousel (1, ".cuartaInstancia", 0, true, true, false);
     
     primerSlider.setupSlides()
     segundoSlider.setupSlides()

@@ -10,7 +10,7 @@
 //  <div class="sliderContainer primerInstancia">
 //      <div class="slide">Un Slide</div>
 //      <div class="slide">Dos Slides</div>
-//      <div class="slide">Tres Slides lalala</div>
+//      <div class="slide">Tres Slides etc...</div>
 //  </div>
 //</div>
 //<div class="dotContainer primerInstancia">
@@ -34,7 +34,7 @@
 //Constructor
 
 export class Carousel {
-    constructor(index = 1, container, autoSlide, autoSlideTime, dotsEnabled, showArrows, resizing, multipleItems){
+    constructor(index = 1, container, autoSlide, dotsEnabled, showArrows, multipleItems){
         this.slideIndex = index;
         this.container = container;
         this.dotContainer = document.querySelector(".dotContainer" + container);
@@ -42,98 +42,13 @@ export class Carousel {
 
         //options
         this.autoSlide = autoSlide;
-        this.autoSlideTime = autoSlideTime
         this.dotsEnabled = dotsEnabled;
         this.showArrows = showArrows;
-        this.isResizing = resizing;
         this.multipleItems = multipleItems;
+
+        //global
+        this.actualQuerie;
     }
-    // setWindowResizeEvent(){
-    //     //acomodo el evento para detectar resize y que se vuelva a construir el carousel
-    //     window.addEventListener('resize', event => {
-    //         //este se hace para que no se haga resize en cada pixel, sino que espera 1000 antes de hacerlo
-    //         if(this.isResizing) {
-    //             return;
-    //         } else {
-    //             this.isResizing=true;
-    //             setTimeout(()=>{
-    //                 //chequea si se destruye o no porque si no cambia el layout no vale la pena
-    //                 let newLayout = this.setLayout(window.innerWidth)
-    
-    //                 //si setLayout devuelve false, es necesario la destruccion porque no hay carousel en este nuevo layout y no se activa mas
-    //                 if ( !newLayout ) {
-    //                     console.log('esta desactivo')
-    //                     this.destroyCarousel();
-    //                 } else if ( newLayout != layout ) {
-    //                     //si newLayout no es igual a llayout hay que destruirlo y volverlo a armar porque cambia layout
-    //                     this.isResizing=false;
-    //                     this.destroyCarousel();
-    //                     setTimeout(()=>{
-    //                         this.startCarousel();
-    //                     },500);
-    //                 } 
-    
-    //                 this.isResizing=false;
-                    
-    //             },1000)
-    //         }
-    //     });
-    // }
-    // //devuelve layout: base/medium/large/xl y sabe cuantos debe mostrar
-    // setLayout(w){
-    //     let breakpoints = {
-    //         base: {
-    //             minWidth: 0,
-    //             items: 1,
-    //             active: true
-    //         },
-    //         medium: {
-    //             minWidth: 760,
-    //             items: 2,
-    //             active: true
-    //         },
-    //         large: {
-    //             minWidth: 992,
-    //             items: 3,
-    //             active: true
-    //         },
-    //         xlarge: {
-    //             minWidth: 1200,
-    //             items: 3,
-    //             active: true
-    //         }
-    //     }
-    //     let items = 1;
-    //     let active = true;
-    
-    //     switch (true) {
-    //         case w > breakpoints.xlarge.minWidth:
-    //             items = breakpoints.xlarge.items;
-    //             active = breakpoints.xlarge.active;
-    //         break;
-        
-    //         case w > breakpoints.large.minWidth:
-    //             items = breakpoints.large.items;
-    //             active = breakpoints.large.active;
-    //         break;
-    
-    //         case w > breakpoints.medium.minWidth:
-    //             items = breakpoints.medium.items;
-    //             active = breakpoints.medium.active;
-    //         break;
-    //         default:
-    //             items = breakpoints.base.items;
-    //             active = breakpoints.base.active;
-    //         break;
-    //     }
-    
-    //     if ( active ) {
-    //         return items;
-    //     } else {
-    //         return false;
-    //     }
-        
-    // }
     //Comandos de movimiento de slides.
     plusSlides(n){
         this.showSlides(this.slideIndex += n);
@@ -141,12 +56,82 @@ export class Carousel {
     currenteSlide(n){
         this.showSlides(this.slideIndex = n);
     }
+    //Los 3 siguientes metodos, hacen el cambio de cantidad de items y de desplazamiento en diferentes breakpoints
+    handleTabletChange(e){
+        if(e.matches){
+            this.actualQuerie = 'tablet';
+            for (let i = 0; i < this.slides.length; i++){
+                this.slides[i].style.display = "none";
+            }
+            this.slides[this.slideIndex - 1].style.display = "block";
+            this.slides[this.slideIndex].style.display = "block";
+
+            if(this.dotsEnabled === true){
+                if(this.multipleItems === true){
+                    let removeDots = this.dotContainer.querySelectorAll('.activeDot')
+                    removeDots.forEach(element => {
+                        element.classList.remove('activeDot')
+                    });
+                    this.dots[this.slideIndex - 1].className += " activeDot";
+                    this.dots[this.slideIndex].className += " activeDot";
+                }else{
+                    this.dots[this.slideIndex - 1].className += " activeDot";
+                }
+            }
+        }
+    }
+    handleDesktopChange(e){
+        if(e.matches){
+            this.actualQuerie = 'desktop';
+            for (let i = 0; i < this.slides.length; i++){
+                this.slides[i].style.display = "none";
+            }
+            this.slides[this.slideIndex - 1].style.display = "block";
+            this.slides[this.slideIndex].style.display = "block";
+            this.slides[this.slideIndex + 1].style.display = "block";
+            
+            if(this.dotsEnabled === true){
+                if(this.multipleItems === true){
+                    let removeDots = this.dotContainer.querySelectorAll('.activeDot')
+                    removeDots.forEach(element => {
+                        element.classList.remove('activeDot')
+                    });
+                    this.dots[this.slideIndex - 1].className += " activeDot";
+                    this.dots[this.slideIndex].className += " activeDot";
+                    this.dots[this.slideIndex + 1].className += " activeDot";
+                }else{
+                    this.dots[this.slideIndex - 1].className += " activeDot";
+                }
+            }
+        }
+    }
+    handleMobileChange(e){
+        if(e.matches){
+            this.actualQuerie = 'mobile';
+            for (let i = 0; i < this.slides.length; i++){
+                this.slides[i].style.display = "none";
+            }
+            this.slides[this.slideIndex - 1].style.display = "block";
+            if(this.dotsEnabled === true){
+                if(this.multipleItems === true){
+                    let removeDots = this.dotContainer.querySelectorAll('.activeDot')
+                    removeDots.forEach(element => {
+                        element.classList.remove('activeDot')
+                    });
+                    this.dots[this.slideIndex - 1].className += " activeDot";
+                }else{
+                    this.dots[this.slideIndex - 1].className += " activeDot";
+                }
+            }
+        }
+    }
     //TODO Revisar en breakpoints!
     //Metodo para el display de cada slide individualmente.
     showSlides(n){
         this.dots = document.querySelectorAll(this.container + " .dot");
         let i;
         if(this.multipleItems === true){
+            
             if(n > this.slides.length -1){
                 this.slideIndex = 1;
             }
@@ -170,73 +155,33 @@ export class Carousel {
         for (i = 0; i < this.dots.length; i++){
             this.dots[i].className = this.dots[i].className.replace(" activeDot", "");
         }
-        //Preparacion de media queries
-        if(this.multipleItems === true){
-            const mqTablet = window.matchMedia('(min-width:768px');
-            const mqDesktop = window.matchMedia('(min-width:1200px)');
-        }
-        
             
-        //TODO > ATENCION: MODIFICADOR DE BEHAVIOR Debajo de esta linea.
+        //En esta seccion, se observa el cambio de breakpoints cuando la opcion de items multiples esta activa.
         if(this.multipleItems === true){
-            const mqTablet = window.matchMedia('(min-width:768px) and (max-width:1000px)');
+            const mqTablet = window.matchMedia('(min-width:768px) and (max-width:1199px)');
             const mqDesktop = window.matchMedia('(min-width:1200px)');
             const mqMobile = window.matchMedia('(max-width:767px')
-            function handleTabletChange(e){
-                if(e.matches){
-                    for (i = 0; i < this.slides.length; i++){
-                        this.slides[i].style.display = "none";
-                    }
-                    this.slides[this.slideIndex - 1].style.display = "block";
-                    this.slides[this.slideIndex].style.display = "block";
-                }
-            }
-            function handleDesktopChange(e){
-                if(e.matches){
-                    for (i = 0; i < this.slides.length; i++){
-                        this.slides[i].style.display = "none";
-                    }
-                    this.slides[this.slideIndex - 1].style.display = "block";
-                    this.slides[this.slideIndex].style.display = "block";
-                    this.slides[this.slideIndex + 1].style.display = "block";
-                }
-            }
-            function handleMobileChange(e){
-                if(e.matches){
-                    for (i = 0; i < this.slides.length; i++){
-                        this.slides[i].style.display = "none";
-                    }
-                    this.slides[this.slideIndex - 1].style.display = "block";
-                }
-            }
-            mqMobile.addListener(handleMobileChange.bind(this))
-            mqTablet.addListener(handleTabletChange.bind(this))
-            mqDesktop.addListener(handleDesktopChange.bind(this))
+            
+            mqMobile.addEventListener('change', this.handleMobileChange.bind(this))
+            mqTablet.addEventListener('change', this.handleTabletChange.bind(this))
+            mqDesktop.addEventListener('change', this.handleDesktopChange.bind(this))
             //Checks iniciales:
-            handleMobileChange(mqMobile).bind(this)
-            handleTabletChange(mqTablet).bind(this)
-            handleDesktopChange(mqDesktop).bind(this)
+            this.handleMobileChange(mqMobile)
+            this.handleTabletChange(mqTablet)
+            this.handleDesktopChange(mqDesktop)
         }else{
             this.slides[this.slideIndex - 1].style.display = "block";
         }
         
-        
-        //Si los dots estan activados, muestra en tiempo real la ubicacion del dot.
-        if(this.dotsEnabled === true){
-            //TODO > ATENCION: MODIFICADOR DE BEHAVIOR DEBAJO DE ESTA LINEA
-            if(this.multipleItems === true){
+        //Si los dots estan activados, y el muestro de items multiples desactivado, muestra en tiempo real la ubicacion del unico dot.
+        if(this.dotsEnabled === true && this.multipleItems === false){
                 this.dots[this.slideIndex - 1].className += " activeDot";
-                this.dots[this.slideIndex].className += " activeDot";
-            }else{
-                this.dots[this.slideIndex - 1].className += " activeDot";
-            }
         }
     }
 
     //Metodo a llamar para crear la instancia del carrusel. (asigna los movimientos a las flechas y dots)
     //asi como tambien triggerea la opcion de el slide automatico.
     setupSlides(){
-        // this.setWindowResizeEvent();
         //Construccion de flechas de desplazamiento. Si la cantidad de items es 1, no se hacen flechas.
         if(this.slides.length > 1 && this.showArrows === true){
             let arrowContainer = document.querySelector(this.container)
@@ -288,12 +233,11 @@ export class Carousel {
         }
 
         this.showSlides(this.slideIndex);
-
-        //Slide Automatico
-        if(this.autoSlide === true){
+        //Slide Automatico, requiere un valor en milisegundos dado en la opcion del carrusel. Valor 0, implica no Slide automatico.
+        if(this.autoSlide !== 0){
             setInterval(() => {
                 this.plusSlides(1);
-            }, this.autoSlideTime);
+            }, this.autoSlide);
         }
     }
 }
