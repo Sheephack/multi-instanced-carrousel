@@ -131,9 +131,18 @@ export class Carousel {
         this.dots = document.querySelectorAll(this.container + " .dot");
         let i;
         if(this.multipleItems === true){
-            
-            if(n > this.slides.length -1){
-                this.slideIndex = 1;
+            if(this.actualQuerie === 'mobile'){
+                if(n > this.slides.length){
+                    this.slideIndex = 1;
+                }
+            }else if (this.actualQuerie === 'tablet'){
+                if(n > this.slides.length -1){
+                    this.slideIndex = 1;
+                }
+            }else if (this.actualQuerie === 'desktop'){
+                if(n > this.slides.length -2){
+                    this.slideIndex = 1;
+                }
             }
         }else{
             if(n > this.slides.length){
