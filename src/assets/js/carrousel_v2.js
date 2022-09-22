@@ -30,6 +30,8 @@
 //
 //
 
+//TODO: Verificar movimiento hacia atras en el ultimo elemento en desktop y mobile.
+//TODO: Generar chequeo de prevencion de multi-instancia.
 
 //Constructor
 
