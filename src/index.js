@@ -1,5 +1,5 @@
 import './assets/css/style.scss';
-import {Carousel} from './assets/js/carrousel_v2.js'
+import {CarouselInit} from './assets/js/carrousel_v2.js'
 import {CarouselV3} from './assets/js/carousel.js'
 
 
@@ -11,7 +11,7 @@ import {CarouselV3} from './assets/js/carousel.js'
 
     //do
     console.log('This site is loaded');
-
+    CarouselInit()
     let primerSlider = new Carousel (1, ".primerInstancia", 0, true, true, true);
     let segundoSlider = new Carousel (1, ".segundaInstancia", 5000, false, false, false);
     let tercerSlider = new Carousel (1, ".tercerInstancia", 0, true, true, false);
